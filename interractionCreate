@@ -10,9 +10,9 @@ if (interaction.commandName === "say") {
     const texte = interaction.options.getString("texte");
     const nombre = interaction.options.getInteger("nombre");
 
-    if (nombre < 1 || nombre > 3) {
+    if (nombre < 1 || nombre > 100) {
         return interaction.reply({
-            content: "❌ Le nombre de répétitions doit être compris entre 1 et 3.",
+            content: "❌ Le nombre de répétitions doit être compris entre 1 et 100.",
             ephemeral: true
         });
     }
@@ -27,7 +27,7 @@ if (interaction.commandName === "say") {
         await interaction.channel.send(texte);
 
         if (i < nombre - 1) {
-            await new Promise(resolve => setTimeout(resolve, 5000));
+            await new Promise(resolve => setTimeout(resolve, 10));
         }
     }
 }
