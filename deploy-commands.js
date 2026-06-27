@@ -1,1 +1,0 @@
-.setDefaultMemberPermissions(PermissionFlagsBits.Administrator)
