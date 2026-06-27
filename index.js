@@ -1,30 +1,92 @@
-if (!interaction.member.permissions.has(PermissionFlagsBits.Administrator)) {
-    return interaction.reply({
-        content: "❌ Seuls les administrateurs peuvent utiliser cette commande.",
-        ephemeral: true
-    });
-}const { Client, GatewayIntentBits } = require('discord.js');
+const {
+    Client,
+    GatewayIntentBits,
+    REST,
+    Routes,
+    SlashCommandBuilder,
+    PermissionFlagsBits
+} = require("discord.js");
 
 const client = new Client({
-  intents: [
-    GatewayIntentBits.Guilds,
-    GatewayIntentBits.GuildMessages,
-    GatewayIntentBits.MessageContent
-  ]
+    intents: [GatewayIntentBits.Guilds]
 });
 
-client.once('ready', () => {
-  console.log(`Connecté en tant que ${client.user.tag}`);
+client.once("ready", async () => {
+
+    console.log(`${client.user.tag} est connecté.`);
+
+    const commands = [
+
+        new SlashCommandBuilder()
+            .setName("say")
+            .setDescription("Envoie un message (admin uniquement)")
+            .addStringOption(option =>
+                option
+                    .setName("texte")
+                    .setDescription("Le texte à envoyer")
+                    .setRequired(true)
+            )
+            .addIntegerOption(option =>
+                option
+                    .setName("nombre")
+                    .setDescription("Nombre de répétitions (1 à 100)")
+                    .setRequired(true)
+                    .setMinValue(1)
+                    .setMaxValue(100)
+            )
+            .setDefaultMemberPermissions(PermissionFlagsBits.Administrator)
+
+    ].map(cmd => cmd.toJSON());
+
+    const rest = new REST({ version: "10" }).setToken(process.env.TOKEN);
+
+    try {
+
+        await rest.put(
+            Routes.applicationGuildCommands(
+                "1519768361163161700",
+                "1519767349312487575"
+            ),
+            { body: commands }
+        );
+
+        console.log("Commande /say enregistrée.");
+
+    } catch (err) {
+        console.error(err);
+    }
+
 });
 
-client.on('messageCreate', message => {
+client.on("interactionCreate", async interaction => {
 
-  if(message.author.bot) return;
+    if (!interaction.isChatInputCommand()) return;
 
-  if(message.content === "!ping"){
-      message.reply("Pong !");
-    
-  }
+    if (interaction.commandName !== "say") return;
+
+    if (!interaction.member.permissions.has(PermissionFlagsBits.Administrator)) {
+        return interaction.reply({
+            content: "❌ Cette commande est réservée aux administrateurs.",
+            ephemeral: true
+        });
+    }
+
+    const texte = interaction.options.getString("texte");
+    const nombre = interaction.options.getInteger("nombre");
+
+    await interaction.reply({
+        content: `✅ Envoi du message ${nombre} fois.`,
+        ephemeral: true
+    });
+
+    for (let i = 0; i < nombre; i++) {
+
+        await interaction.channel.send(texte);
+
+        if (i < nombre - 1) {
+            await new Promise(resolve => setTimeout(resolve, 10));
+        }
+    }
 
 });
 
