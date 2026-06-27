@@ -1,4 +1,9 @@
-const { Client, GatewayIntentBits } = require('discord.js');
+if (!interaction.member.permissions.has(PermissionFlagsBits.Administrator)) {
+    return interaction.reply({
+        content: "❌ Seuls les administrateurs peuvent utiliser cette commande.",
+        ephemeral: true
+    });
+}const { Client, GatewayIntentBits } = require('discord.js');
 
 const client = new Client({
   intents: [
